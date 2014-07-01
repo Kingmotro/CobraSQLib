@@ -10,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -90,16 +92,33 @@ public class SQLiteEngine extends SQLEngine {
         }
     }
     
+    /**
+     * Runs a natively asynchronous query against this SQLite database that will return the
+     * result of the query by executing a specified callback method via reflection.
+     * 
+     * The result of the query will be in the form of a Map<String, Object> containing
+     * the key of column name and a value of the column contents.
+     * 
+     * @param query A string of the full SQLite query to execute against this database.
+     * @param callback A method that will be executed once the query is finished. This method
+     * must accept a parameter of Map<String, Object>.
+     * @throws SQLException
+     */
     @Override
-    public void runQuery(final String query, final Method callback) throws SQLException {
+    public void runAsyncQuery(final String query, final Method callback) throws SQLException {
         queryExecutor.execute(new Runnable() {
+            @Override
             public void run() {
                 Connection conn = getConnection();
-                ResultSet result = null;
-                PreparedStatement statement = null;
+                ResultSet result;
+                Map<String, Object> resultMap = new HashMap<>();
+                PreparedStatement statement;
                 try {
                     statement = conn.prepareStatement(query);
                     result = statement.executeQuery();
+                    while(result.next()) {
+                        resultMap.put(result.getString(1), result.getObject(1));
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
                     if(conn != null) {
@@ -113,7 +132,7 @@ public class SQLiteEngine extends SQLEngine {
                 }
                 
                 try {
-                    callback.invoke(result);
+                    callback.invoke(resultMap);
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -121,13 +140,40 @@ public class SQLiteEngine extends SQLEngine {
         });
     }
     
+    /**
+     * Runs a natively asynchronous update against this SQLite database.
+     * 
+     * @param update A string of the full SQLite update statement to execute against this database.
+     * @throws SQLException
+     */
     @Override
-    public void runUpdate(String query) throws SQLException {
+    public void runAsyncUpdate(String update) throws SQLException {
         
     }
     
+    /**
+     * Runs a synchronous query against this SQLite database.
+     * 
+     * The result of the query will be in the form of a Map<String, Object> containing
+     * the key of column name and a value of the column contents.
+     * 
+     * @param query A string of the full SQLite query to execute against this database.
+     * @return Returns a Map<String, Object> representing the result set.
+     * @throws SQLException
+     */
     @Override
-    public void runUpdate(String query, Method callback) throws SQLException {
+    public Map<String, Object> runSyncQuery(String query) throws SQLException {
+        return new HashMap<>();
+    }
+    
+    /**
+     * Runs a synchronous update against this SQLite database.
+     * 
+     * @param update A string of the full SQLite update statement to execute against this database.
+     * @throws SQLException
+     */
+    @Override
+    public void runSyncUpdate(String update) throws SQLException {
         
     }
 }

@@ -3,6 +3,7 @@ package us.drome.cobrasqlib;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public abstract class SQLEngine {
@@ -12,11 +13,13 @@ public abstract class SQLEngine {
         this.logger = logger;
     }
 
-    public abstract void runQuery (String query, Method callback) throws SQLException;
-
-    public abstract void runUpdate (String update) throws SQLException;
+    public abstract void runAsyncQuery (String query, Method callback) throws SQLException;
     
-    public abstract void runUpdate (String update, Method callback) throws SQLException;
+    public abstract void runAsyncUpdate (String update) throws SQLException;
+    
+    public abstract Map<String,Object> runSyncQuery(String query) throws SQLException;
+    
+    public abstract void runSyncUpdate(String update) throws SQLException;
     
     public abstract Connection getConnection();
     
