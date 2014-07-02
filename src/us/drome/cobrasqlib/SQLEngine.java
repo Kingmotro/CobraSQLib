@@ -26,4 +26,6 @@ public abstract class SQLEngine {
     public abstract void closeConnection();
     
     public abstract void shutdown();
+    
+    public abstract Table getTable();
 }

@@ -9,8 +9,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -93,15 +96,25 @@ public class SQLiteEngine extends SQLEngine {
     }
     
     /**
+     * Returns the table that this connection is currently working in.
+     * 
+     * @return
+     */
+    @Override
+    public Table getTable() {
+        return new Table("derp");
+    }
+    
+    /**
      * Runs a natively asynchronous query against this SQLite database that will return the
      * result of the query by executing a specified callback method via reflection.
      * 
-     * The result of the query will be in the form of a Map<String, Object> containing
+     * The result of the query will be in the form of a List<Map<String, Object>>containing
      * the key of column name and a value of the column contents.
      * 
      * @param query A string of the full SQLite query to execute against this database.
      * @param callback A method that will be executed once the query is finished. This method
-     * must accept a parameter of Map<String, Object>.
+     * must accept a parameter of List<Map<String, Object>>.
      * @throws SQLException
      */
     @Override
@@ -111,13 +124,19 @@ public class SQLiteEngine extends SQLEngine {
             public void run() {
                 Connection conn = getConnection();
                 ResultSet result;
-                Map<String, Object> resultMap = new HashMap<>();
+                ResultSetMetaData resultMeta;
+                List<Map<String, Object>> resultList = new ArrayList<>();
                 PreparedStatement statement;
                 try {
                     statement = conn.prepareStatement(query);
                     result = statement.executeQuery();
+                    resultMeta = result.getMetaData();
                     while(result.next()) {
-                        resultMap.put(result.getString(1), result.getObject(1));
+                        Map<String, Object> row = new HashMap<>();
+                        for(int i = 1 ; i <= resultMeta.getColumnCount() ; i++) {
+                            row.put(resultMeta.getColumnName(i), result.getObject(i));
+                        }
+                        resultList.add(row);
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -132,7 +151,7 @@ public class SQLiteEngine extends SQLEngine {
                 }
                 
                 try {
-                    callback.invoke(resultMap);
+                    callback.invoke(resultList);
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -147,18 +166,36 @@ public class SQLiteEngine extends SQLEngine {
      * @throws SQLException
      */
     @Override
-    public void runAsyncUpdate(String update) throws SQLException {
-        
+    public void runAsyncUpdate(final String update) throws SQLException {
+        queryExecutor.execute(new Runnable() {
+           @Override
+           public void run() {
+               Connection conn = getConnection();
+               PreparedStatement statement;
+               try {
+                   statement = conn.prepareStatement(update);
+                   statement.executeUpdate();
+               } catch (SQLException e) {
+                   e.printStackTrace();
+                    try {
+                        logger.log(Level.SEVERE, "Attempting to roll back update.");
+                        conn.rollback();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+               }
+           }
+        });
     }
     
     /**
      * Runs a synchronous query against this SQLite database.
      * 
-     * The result of the query will be in the form of a Map<String, Object> containing
+     * The result of the query will be in the form of a List<Map<String, Object>> containing
      * the key of column name and a value of the column contents.
      * 
      * @param query A string of the full SQLite query to execute against this database.
-     * @return Returns a Map<String, Object> representing the result set.
+     * @return Returns a List<Map<String, Object>> representing the result set.
      * @throws SQLException
      */
     @Override
