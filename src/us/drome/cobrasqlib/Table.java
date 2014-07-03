@@ -13,7 +13,7 @@ public abstract class Table {
     
     public abstract String getName();
     
-    public abstract List<String> getColumns();
+    public abstract ColumnSet getColumns();
     
     public abstract Column getColumn(String name);
     

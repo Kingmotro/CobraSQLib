@@ -33,7 +33,7 @@ public class Row {
     
     /**
      * Set the contents of the specified column to the provided object.
-     * To commit this change to the database you will need to run the Table/'s
+     * To commit this change to the database you will need to run the Table's
      * setRow() method with this Row as the parameter.
      * 
      * @param column The name of the column you wish to update.
