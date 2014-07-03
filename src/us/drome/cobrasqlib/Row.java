@@ -3,6 +3,13 @@ package us.drome.cobrasqlib;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class represents a Row inside a database Table and includes methods to
+ * retrieve and set data.
+ * 
+ * @author TheAcademician
+ * @since 0.1
+ */
 public class Row {
     private final Table parent;
     private HashMap<String, Object> data;
@@ -20,14 +27,14 @@ public class Row {
     /**
      * Returns the parent table that this row belongs to.
      * 
-     * @return
+     * @return a <tt>Table</tt> object that is the parent to this <tt>Row</tt> object.
      */
     public Table getTable() { return this.parent; }
     
     /**
-     * Returns the entire contents of this row as a HashMap.
+     * Returns the entire contents of this row as a Map.
      * 
-     * @return
+     * @return a <tt>Map</tt> representing this <tt>Row</tt>'s data.
      */
     public Map<String, Object> getData() { return this.data; }
     
@@ -45,7 +52,7 @@ public class Row {
      * Returns the raw Object representing the contents of the specified column.
      * 
      * @param column
-     * @return
+     * @return <tt>Object</tt> representing the contents of the specific column.
      */
     public Object get(String column) { return getData().get(column); }
     
@@ -53,7 +60,7 @@ public class Row {
      * Returns a String representing the contents of the specified column.
      * 
      * @param column
-     * @return
+     * @return <tt>OString</tt> representing the contents of the specific column.
      */
     public String getAsString(String column) { return String.valueOf(getData().get(column)); }
     
@@ -62,7 +69,7 @@ public class Row {
      * 
      * @param column
      * @throws NumberFormatException
-     * @return
+     * @return <tt>Integer</tt> representing the contents of the specific column.
      */
     public Integer getAsInt(String column) throws NumberFormatException { return Integer.parseInt(getAsString(column)); }
 }
