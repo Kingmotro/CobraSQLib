@@ -1,27 +1,24 @@
 package us.drome.cobrasqlib;
 
 /**
- * An enum interface to provide for the specification of the various column data types present across the different SQL implementations.
+ * An interface to provide for the specification of the various <tt>Column</tt> data types present across the different SQL implementations.
  * 
  * @author TheAcademician
+ * @since 0.1
  */
 public interface DataType {
-    public String getType();
-}
 
-enum SQLiteType implements DataType { TEXT, NUMERIC, INTEGER, REAL, NONE;
-    @Override
-    public String getType() { return toString(); }
-};
+    /**
+     * Returns a <tt>String</tt> representing the data type.
+     * 
+     * @return a <tt>String</tt> representing the data type.
+     */
+    public String getType();
     
-enum MySQLType implements DataType { CHAR, VARCHAR, TINYTEXT, TEXT, BLOB, MEDIUMTEXT, MEDIUMBLOB, LONGTEXT, LONGBLOB, ENUM, SET,
-    TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL,
-    DATE, DATETIME, TIMESTAMP, TIME;
-    @Override
-    public String getType() { return toString(); } 
-};
-    
-enum PostgreSQL implements DataType { CHAR;
-    @Override
-    public String getType() { return toString(); }
-};
+    /**
+     * Returns a <tt>Boolean</tt> indicating if this field can increment automatically.
+     * 
+     * @return <tt>true</tt> if the data type can increment; <tt>false</tt> if it cannot.
+     */
+    public Boolean canAutoincrement();
+}
