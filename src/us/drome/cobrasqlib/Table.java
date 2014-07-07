@@ -2,7 +2,6 @@ package us.drome.cobrasqlib;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.List;
 
 public abstract class Table {
     protected String name;

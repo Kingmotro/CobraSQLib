@@ -13,12 +13,12 @@ public class SQLiteType implements DataType {
     enum SQLiteTypes { TEXT, NUMERIC, INTEGER, REAL, NONE; }
     
     /**
-     * <tt>String</tt> value containing the data type of this SQLiteType object.
+     * <tt>String</tt> object containing the data type of this <tt>SQLiteType</tt> object.
      */
     private final String type;
     
     /**
-     * A private constructor that is used to instantiate a new <tt>SQLiteType</tt> object to a give type.
+     * A private constructor that is used to instantiate a new <tt>SQLiteType</tt> object to a given type.
      * 
      * @param type the data type for this new <tt>SQLite</tt> object
      */
