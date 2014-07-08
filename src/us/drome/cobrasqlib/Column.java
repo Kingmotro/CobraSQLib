@@ -1,5 +1,7 @@
 package us.drome.cobrasqlib;
 
+import java.sql.Types;
+
 /**
  * This class represents a <tt>Column</tt> definition for a <tt>Table</tt> in the database of any engine.
  * 
@@ -8,9 +10,25 @@ package us.drome.cobrasqlib;
  */
 public class Column {
     private final String name;
-    private final DataType dataType;
+    private final Types type;
+    private final int precision;
+    private final int scale;
     private final boolean isPrimary;
     private final boolean isAutoincrement;
+    private final boolean isNullable;
+    private final Table parent;
+    
+    public Column(String name, Types type, Table parent) {
+        this.name = name;
+        this.type = type;
+        this.parent = parent;
+        precision = 0;
+        scale = 0;
+    }
+    
+    public Column(String name, Types type, int precision, int scale, boolean isPrimary, boolean isAutoincrement, boolean isNullable, Table parent) {
+        
+    }
     
     /**
      * Constructs a new <tt>Column</tt> with the provided name, {@link DataType}, a <tt>boolean</tt>

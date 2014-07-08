@@ -102,7 +102,7 @@ public class SQLiteEngine extends SQLEngine {
      */
     @Override
     public Table getTable() {
-        return new Table("derp");
+        return null;
     }
     
     /**
