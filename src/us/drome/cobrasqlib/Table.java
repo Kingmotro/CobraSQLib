@@ -28,3 +28,9 @@ public abstract class Table {
     
     public abstract void delete(Object key) throws SQLException;
 }
+/*
+Table - run query and update operations on database. Results are in List<Row> format, Row class to become Set<Column>
+need to add versons of query/update that return row/column types.
+Need to create table designer class to create new tables, needs to be DB specific as SQLite does not support some functions/syntax.
+Table designer class should be inside DB engine class or separate entirely.
+*/

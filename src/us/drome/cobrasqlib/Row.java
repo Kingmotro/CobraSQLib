@@ -1,6 +1,5 @@
 package us.drome.cobrasqlib;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -12,16 +11,17 @@ import java.util.Map;
  */
 public class Row {
     private final Table parent;
-    private HashMap<String, Object> data;
+    private Map<String, Object> data;
     
     /**
      * Represents a <tt>Row</tt> inside a database <tt>Table</tt>.
      * 
      * @param parent The <tt>Table</tt> that this <tt>Row</tt> is contained in.
+     * @param data A <tt>Map</tt> with key:column name & value:column data.
      */
-    public Row(Table parent) {
+    public Row(Table parent, Map<String, Object> data) {
         this.parent = parent;
-        this.data = new HashMap<>();
+        this.data = data;
     }
     
     /**

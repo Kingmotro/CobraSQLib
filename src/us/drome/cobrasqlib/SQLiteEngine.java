@@ -2,30 +2,30 @@ package us.drome.cobrasqlib;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+/**
+ * Class represents a connection to a SQLite database file.
+ * 
+ * @author TheAcademician
+ * @since 0.1
+ */
 public class SQLiteEngine extends SQLEngine {
     private String file;
-    private Connection connection;
-    private ExecutorService queryExecutor;
+    Connection connection;
     
+    /**
+     * Construct a new <tt>SQLiteEngine</tt> by specifying a logger for output and a path to database file.
+     * 
+     * @param logger a <tt>Logger</tt> instance for sending output.
+     * @param file a <tt>String</tt> containing the path to the database file.
+     * @throws InvalidSQLConfigException
+     */
     public SQLiteEngine (Logger logger, String file) throws InvalidSQLConfigException {
         super(logger);
         if(file == null || file.isEmpty()) {
@@ -33,21 +33,13 @@ public class SQLiteEngine extends SQLEngine {
         } else {
             this.file = file;
         }
-        
-        queryExecutor = Executors.newCachedThreadPool();
     }
     
-    @Override
-    public void shutdown() {
-        if(connection != null) {
-            closeConnection();
-        }
-        if(queryExecutor != null) {
-            queryExecutor.shutdown();
-        }
-        logger.log(Level.INFO, "SQLite Engine has been successfully shut down.");
-    }
-    
+    /**
+     * Retrieve the <tt>File</tt> instance containing the location to the SQLite database file.
+     * 
+     * @return a <tt>File</tt> object containing the location to the database file.
+     */
     public File getFile() {
         File db = new File(file);
         if(!db.isAbsolute()) {
@@ -62,6 +54,7 @@ public class SQLiteEngine extends SQLEngine {
     
     @Override
     public Connection getConnection() {
+        
         try {
             if(connection == null || !connection.isValid(10)) {
                 connection = openConnection(getFile());
@@ -72,7 +65,7 @@ public class SQLiteEngine extends SQLEngine {
         return connection;
     }
     
-    public Connection openConnection(File db) throws SQLException {
+    private Connection openConnection(File db) throws SQLException {
         try {
             Class.forName(org.sqlite.JDBC.class.getName());
             return DriverManager.getConnection("jdbc:sqlite:" + db);
@@ -95,122 +88,23 @@ public class SQLiteEngine extends SQLEngine {
         }
     }
     
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        if(connection != null) {
+            closeConnection();
+        }
+        logger.log(Level.INFO, "SQLite Engine has been successfully shut down.");
+    }
+    
     /**
-     * Returns the table that this connection is currently working in.
+     * Returns the specified table if it is in the database.
      * 
+     * @param name The name of the <tt>Table</tt> to return.
      * @return
      */
     @Override
-    public Table getTable() {
-        return null;
-    }
-    
-    /**
-     * Runs a natively asynchronous query against this SQLite database that will return the
-     * result of the query by executing a specified callback method via reflection.
-     * 
-     * The result of the query will be in the form of a List<Map<String, Object>>containing
-     * the key of column name and a value of the column contents.
-     * 
-     * @param query A string of the full SQLite query to execute against this database.
-     * @param callback A method that will be executed once the query is finished. This method
-     * must accept a parameter of List<Map<String, Object>>.
-     * @throws SQLException
-     */
-    @Override
-    public void runAsyncQuery(final String query, final Method callback) throws SQLException {
-        queryExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                Connection conn = getConnection();
-                ResultSet result;
-                ResultSetMetaData resultMeta;
-                List<Map<String, Object>> resultList = new ArrayList<>();
-                PreparedStatement statement;
-                try {
-                    statement = conn.prepareStatement(query);
-                    result = statement.executeQuery();
-                    resultMeta = result.getMetaData();
-                    while(result.next()) {
-                        Map<String, Object> row = new HashMap<>();
-                        for(int i = 1 ; i <= resultMeta.getColumnCount() ; i++) {
-                            row.put(resultMeta.getColumnName(i), result.getObject(i));
-                        }
-                        resultList.add(row);
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    if(conn != null) {
-                        try {
-                            logger.log(Level.SEVERE, "Attempting to roll back query.");
-                            conn.rollback();
-                        } catch (SQLException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                }
-                
-                try {
-                    callback.invoke(resultList);
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-    }
-    
-    /**
-     * Runs a natively asynchronous update against this SQLite database.
-     * 
-     * @param update A string of the full SQLite update statement to execute against this database.
-     * @throws SQLException
-     */
-    @Override
-    public void runAsyncUpdate(final String update) throws SQLException {
-        queryExecutor.execute(new Runnable() {
-           @Override
-           public void run() {
-               Connection conn = getConnection();
-               PreparedStatement statement;
-               try {
-                   statement = conn.prepareStatement(update);
-                   statement.executeUpdate();
-               } catch (SQLException e) {
-                   e.printStackTrace();
-                    try {
-                        logger.log(Level.SEVERE, "Attempting to roll back update.");
-                        conn.rollback();
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-               }
-           }
-        });
-    }
-    
-    /**
-     * Runs a synchronous query against this SQLite database.
-     * 
-     * The result of the query will be in the form of a List<Map<String, Object>> containing
-     * the key of column name and a value of the column contents.
-     * 
-     * @param query A string of the full SQLite query to execute against this database.
-     * @return Returns a List<Map<String, Object>> representing the result set.
-     * @throws SQLException
-     */
-    @Override
-    public Map<String, Object> runSyncQuery(String query) throws SQLException {
-        return new HashMap<>();
-    }
-    
-    /**
-     * Runs a synchronous update against this SQLite database.
-     * 
-     * @param update A string of the full SQLite update statement to execute against this database.
-     * @throws SQLException
-     */
-    @Override
-    public void runSyncUpdate(String update) throws SQLException {
-        
+    public SQLiteTable getTable(String name) {
+        return new SQLiteTable(name);
     }
 }
