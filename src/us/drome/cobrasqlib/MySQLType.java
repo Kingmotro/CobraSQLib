@@ -1,5 +1,7 @@
 package us.drome.cobrasqlib;
 
+import java.util.regex.Pattern;
+
 /**
  * This class provides the specification of MySQL database field types for use with <tt>Column</tt>s
  * 
