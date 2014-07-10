@@ -107,4 +107,16 @@ public class SQLiteEngine extends SQLEngine {
     public SQLiteTable getTable(String name) {
         return new SQLiteTable(name);
     }
+
+    @Override
+    public void createTable(TableBuilder builder) {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            TableBuilder test = new TableBuilder(
+                    new ColumnDef("id", Type.INTEGER, 5, 0, true, true, false, true)
+            );
+        } catch (InvalidSQLConfigException ex) {
+            Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

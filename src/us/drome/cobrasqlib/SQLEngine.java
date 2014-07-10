@@ -174,6 +174,8 @@ public abstract class SQLEngine {
         }
     }
     
+    public abstract void createTable(TableBuilder builder);
+    
     /**
      * Retrieves a <tt>Table</tt> instance for the specified table name from this database.
      * @param name The name of the database table you wish to retrieve.
