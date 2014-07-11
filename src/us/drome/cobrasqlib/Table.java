@@ -1,24 +1,43 @@
 package us.drome.cobrasqlib;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Set;
 
 public abstract class Table {
-    protected String name;
+    private SQLEngine parent;
+    private final String name;
+    private final Set<ColumnDef> columns;
     
-    protected Table(String name) {
+    
+    protected Table(SQLEngine parent, String name, ColumnDef... columns) {
+        this.parent = parent;
         this.name = name;
+        this.columns = (Set<ColumnDef>) Arrays.asList(columns);
     }
     
-    public abstract String getName();
+    public String getName() { return name; }
     
-    public abstract ColumnSet getColumns();
+    public Set<ColumnDef> getColumns() { return columns; }
     
-    public abstract Column getColumn(String name);
+    public ColumnDef getColumn(String name) { 
+        for(ColumnDef def : columns) {
+            if(def.name.equalsIgnoreCase(name)) {
+                return def;
+            }
+        }
+        return null;
+    }
     
-    public abstract void getRow(Object key, Method callback) throws SQLException;
+    public abstract void addColumn(ColumnDef definition);
+
+    public abstract void modifyColumn(String name, ColumnDef newDefinition);
     
-    public abstract void get(Object key, String column, Method callback) throws SQLException;
+    public void removeColumn(String name) { parent.runAsyncUpdate("ALTER TABLE " + this.name + " DROP COLUMN " + name); }
+    
+    public abstract void getRow(Object key, Callback callback) throws SQLException;
+    
+    public abstract void get(Object key, String column, Callback callback) throws SQLException;
     
     public abstract void setRow(Row row) throws SQLException;
     
@@ -28,9 +47,3 @@ public abstract class Table {
     
     public abstract void delete(Object key) throws SQLException;
 }
-/*
-Table - run query and update operations on database. Results are in List<Row> format, Row class to become Set<Column>
-need to add versons of query/update that return row/column types.
-Need to create table designer class to create new tables, needs to be DB specific as SQLite does not support some functions/syntax.
-Table designer class should be inside DB engine class or separate entirely.
-*/

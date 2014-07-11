@@ -46,9 +46,8 @@ public abstract class SQLEngine {
      * @param query A string of the full SQL query to execute against this database.
      * @param callback A <tt>Callback</tt> object that contains the class reference and method that will
      * be executed once the query is finished. This method must accept a parameter of <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt>.
-     * @throws SQLException
      */
-    public void runAsyncQuery (final String query, final Callback callback) throws SQLException {
+    public void runAsyncQuery (final String query, final Callback callback){
         queryExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -56,8 +55,6 @@ public abstract class SQLEngine {
                     callback.invoke(runQuery(query));
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SQLException e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -67,17 +64,12 @@ public abstract class SQLEngine {
      * Runs a natively asynchronous update against this database.
      * 
      * @param update A string of the full SQL update statement to execute against this database.
-     * @throws SQLException
      */
-    public void runAsyncUpdate (final String update) throws SQLException {
+    public void runAsyncUpdate (final String update) {
         queryExecutor.execute(new Runnable() {
            @Override
            public void run() {
-               try {
-                   runUpdate(update);
-               } catch (SQLException e) {
-                   e.printStackTrace();
-               }
+               runUpdate(update);
            }
         });
     }
@@ -91,9 +83,8 @@ public abstract class SQLEngine {
      * 
      * @param query A string of the full SQL query to execute against this database.
      * @return a <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt> representing the result set.
-     * @throws SQLException
      */
-    public List<Map<String,Object>> runQuery(String query) throws SQLException {
+    public List<Map<String,Object>> runQuery(String query) {
         Connection conn = getConnection();
         ResultSet result;
         ResultSetMetaData resultMeta;
@@ -134,9 +125,8 @@ public abstract class SQLEngine {
      * Runs a synchronous update against this database.
      * 
      * @param update A string of the full SQL update statement to execute against this database.
-     * @throws SQLException
      */
-    public void runUpdate(String update) throws SQLException {
+    public void runUpdate(String update) {
         Connection conn = getConnection();
         PreparedStatement statement;
         try {
@@ -174,7 +164,7 @@ public abstract class SQLEngine {
         }
     }
     
-    public abstract void createTable(TableBuilder builder);
+    public abstract Table createTable(TableBuilder builder);
     
     /**
      * Retrieves a <tt>Table</tt> instance for the specified table name from this database.
@@ -182,4 +172,8 @@ public abstract class SQLEngine {
      * @return a <tt>Table</tt> object for the specified table.
      */
     public abstract Table getTable(String name);
+    
+    public abstract void renameTable(String oldName, String newName);
+    
+    public abstract void dropTable(String name);
 }

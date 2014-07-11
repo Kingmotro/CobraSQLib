@@ -1,35 +1,50 @@
 package us.drome.cobrasqlib;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.Set;
 
 public class SQLiteTable extends Table {
-    public SQLiteTable(String name) {
-        super(name);
+    public SQLiteTable(String name, ColumnDef... columns) {
+        super(name, columns);
     }
-    
+
     @Override
     public String getName() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ColumnSet getColumns() {
+    public Set<ColumnDef> getColumns() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public Column getColumn(String name) {
+    public ColumnDef getColumn(String name) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void getRow(Object key, Method callback) throws SQLException {
+    public void addColumn(ColumnDef definition) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public void get(Object key, String column, Method callback) throws SQLException {
+    public void modifyColumn(String name, ColumnDef newDefinition) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void removeColumn(String name) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void getRow(Object key, Callback callback) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void get(Object key, String column, Callback callback) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -52,5 +67,4 @@ public class SQLiteTable extends Table {
     public void delete(Object key) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
 }

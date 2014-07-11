@@ -109,14 +109,25 @@ public class SQLiteEngine extends SQLEngine {
     }
 
     @Override
-    public void createTable(TableBuilder builder) {
+    public Table createTable(TableBuilder builder) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         try {
             TableBuilder test = new TableBuilder(
-                    new ColumnDef("id", Type.INTEGER, 5, 0, true, true, false, true)
+                new ColumnDef("id", Type.INTEGER, Options.isAutoincrement, Options.isNotNull, Options.isPrimary)
             );
         } catch (InvalidSQLConfigException ex) {
             Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return new SQLiteTable("derp");
+    }
+
+    @Override
+    public void renameTable(String oldName, String newName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void dropTable(String name) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
