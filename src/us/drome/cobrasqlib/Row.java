@@ -1,75 +1,59 @@
 package us.drome.cobrasqlib;
 
-import java.util.Map;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
 
-/**
- * This class represents a Row inside a database Table and includes methods to
- * retrieve and set data.
- * 
- * @author TheAcademician
- * @since 0.1
- */
 public class Row {
+    private final Set<Column> columns;
     private final Table parent;
-    private Map<String, Object> data;
     
-    /**
-     * Represents a <tt>Row</tt> inside a database <tt>Table</tt>.
-     * 
-     * @param parent The <tt>Table</tt> that this <tt>Row</tt> is contained in.
-     * @param data A <tt>Map</tt> with key:column name & value:column data.
-     */
-    public Row(Table parent, Map<String, Object> data) {
+    protected Row(Table parent, Column... columns) {
         this.parent = parent;
-        this.data = data;
+        this.columns = (Set<Column>) Arrays.asList(columns);
     }
     
-    /**
-     * Returns the parent <tt>Table</tt> that this <tt>Row</tt> belongs to.
-     * 
-     * @return a <tt>Table</tt> object that is the parent to this <tt>Row</tt> object.
-     */
-    public Table getTable() { return this.parent; }
+    protected void addColumn(Column column) { columns.add(column); }
     
-    /**
-     * Returns the entire contents of this <tt>Row</tt> as a <tt>Map</tt>.
-     * 
-     * @return a <tt>Map</tt> representing this <tt>Row</tt>'s data.
-     */
-    public Map<String, Object> getData() { return this.data; }
+    protected void removeColumn(Column column) { columns.remove(column); }
     
-    /**
-     * Set the contents of the specified column to the provided <tt>Object</tt>.
-     * To commit this change to the database you will need to run the <tt>Table</tt>'s
-     * <<tt>setRow()</tt> method with this Row as the parameter.
-     * 
-     * @param column The name of the column you wish to update.
-     * @param data The data you wish to insert into the column.
-     */
-    public void updateColumn(String column, Object data) { getData().put(column, data); }
+    public Table getTable() { return parent; }
     
-    /**
-     * Returns the raw <tt>Object</tt> representing the contents of the specified column.
-     * 
-     * @param column The name of the column you wish to retrieve data from.
-     * @return <tt>Object</tt> representing the contents of the specific column.
-     */
-    public Object get(String column) { return getData().get(column); }
+    public Column getColumn(String name) {
+        for(Column column : columns) {
+            if(column.getName().equalsIgnoreCase(name)) {
+                return column;
+            }
+        }
+        return null;
+    }
     
-    /**
-     * Returns a <tt>String</tt> representing the contents of the specified column.
-     * 
-     * @param column The name of the column you wish to retrieve data from.
-     * @return <tt>OString</tt> representing the contents of the specific column.
-     */
-    public String getAsString(String column) { return String.valueOf(getData().get(column)); }
+    public void updateRow() throws SQLException { parent.setRow(this); }
     
-    /**
-     * Attempts to return an <tt>Integer</tt> representing the contents of the specified column.
-     * 
-     * @param column The name of the column you wish to retrieve data from.
-     * @throws NumberFormatException if column contents cannot be parsed as an integer.
-     * @return <tt>Integer</tt> representing the contents of the specific column.
-     */
-    public Integer getAsInt(String column) throws NumberFormatException { return Integer.parseInt(getAsString(column)); }
+    public void deleteRow() throws SQLException { parent.deleteRow(this); }
+    
+    public boolean isEmpty() { return columns.isEmpty(); }
+    
+    public int getSize() { return columns.size(); }
+    
+    public boolean contains(Column column) { return columns.contains(column); }
+    
+    public boolean containsAll(Column... columns) { return this.columns.containsAll(Arrays.asList(columns)); }
+    
+    public boolean hasPrimaryKey() {
+        for(Column column: columns) {
+            if(column.isPrimaryKey()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public Iterator<Column> Iterator() { return columns.iterator(); }
+    
+    public Column[] toArray() { return columns.toArray(new Column[columns.size()]); }
+    
+    public boolean equals(Row row) { return columns.equals(row); }
+    
 }

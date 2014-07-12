@@ -7,7 +7,7 @@ public class TableBuilder {
             this.definitions = definitions;
             for(ColumnDef def : definitions) {
                 try {
-                    def.type.verify(def.precision, def.scale, def.isPrimary, def.isAutoincrement, def.isNotNull, def.isUnsigned);
+                    def.type.verifyIntegrity(def.precision, def.scale, def.isPrimary, def.isAutoincrement, def.isNotNull, def.isUnsigned);
                 } catch (InvalidSQLConfigException ex) {
                     throw new InvalidSQLConfigException("Invalid type configuration for column " + def.name + ": " + ex.getMessage());
                 }

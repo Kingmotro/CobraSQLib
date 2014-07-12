@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 public abstract class Table {
-    private SQLEngine parent;
+    private final SQLEngine parent;
     private final String name;
     private final Set<ColumnDef> columns;
     

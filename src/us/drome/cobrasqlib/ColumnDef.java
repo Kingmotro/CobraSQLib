@@ -1,9 +1,5 @@
 package us.drome.cobrasqlib;
 
-enum Options {
-    isPrimary, isAutoincrement, isNotNull, isUnsigned;
-}
-
 public class ColumnDef {
     public String name;
     public Type type;
