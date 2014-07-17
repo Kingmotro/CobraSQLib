@@ -2,90 +2,86 @@ package us.drome.cobrasqlib;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Date;
+import java.sql.NClob;
+import java.sql.Ref;
+import java.sql.Struct;
 import java.sql.Timestamp;
 
 public enum Type {
-    BIT(1,64,0,0,1,0, false, Boolean.class, byte[].class),
-    TINYINT(1,3,0,0,1,0, true, Integer.class, Boolean.class),
-    SMALLINT(0,0,0,0,0,0, true, Integer.class),
-    INTEGER(0,0,0,0,0,0, true, Integer.class, Long.class),
-    BIGINT(0,0,0,0,0,0, true, Long.class, BigInteger.class),
-    FLOAT(0,0,0,0,0,0, true, Float.class),
-    REAL(0,0,0,0,0,0, true, Double.class, Float.class),
-    DOUBLE(0,0,0,0,0,0, true, Double.class),
-    NUMERIC(0,0,0,0,0,0, true, BigDecimal.class),
-    DECIMAL(0,0,0,0,0,0, true, BigDecimal.class),
-    CHAR(0,0,0,0,0,0, String.class),
-    VARCHAR(0,0,0,0,0,0, String.class),
-    LONGVARCHAR(0,0,0,0,0,0, String.class),
-    DATE(0,0,0,0,0,0, Date.class),
-    TIME(0,0,0,0,0,0, Timestamp.class),
-    TIMESTAMP(0,0,0,0,0,0, Timestamp.class),
-    BINARY(0,0,0,0,0,0, byte[].class),
-    VARBINARY(0,0,0,0,0,0),
-    LONGBINARY(0,0,0,0,0,0),
-    NULL(0,0,0,0,0,0),
-    OTHER(0,0,0,0,0,0),
-    JAVA_OBJECT(0,0,0,0,0,0),
-    DISTINCT(0,0,0,0,0,0),
-    STRUCT(0,0,0,0,0,0),
-    ARRAY(0,0,0,0,0,0),
-    BLOB(0,0,0,0,0,0),
-    CLOB(0,0,0,0,0,0),
-    REF(0,0,0,0,0,0),
-    DATALINK(0,0,0,0,0,0),
-    BOOLEAN(1,1,0,0,1,0),
-    ROWID(0,0,0,0,0,0),
-    NCHAR(0,0,0,0,0,0),
-    NVARCHAR(0,0,0,0,0,0),
-    LONGNVARCHAR(0,0,0,0,0,0),
-    NCLOB(0,0,0,0,0,0),
-    SQLXML(0,0,0,0,0,0);
+    BIT(64, 0, true, false, false, Boolean.class, byte[].class),
+    TINYINT(255, 0, true, false, true, Integer.class, Boolean.class),
+    SMALLINT(255, 0, true, false, true, Integer.class),
+    INTEGER(255, 0, true, false, true, Integer.class, Long.class),
+    BIGINT(255, 0, true, false, true, Long.class, BigInteger.class),
+    FLOAT(65, 30, true, true, true, Float.class),
+    REAL(65,30, true, true, true, Double.class, Float.class),
+    DOUBLE(65, 30, true, false, true, Double.class),
+    NUMERIC(65, 30, true, true, true, BigDecimal.class),
+    DECIMAL(65, 30, true, true, true, BigDecimal.class),
+    CHAR(255, 0, true, false, false, String.class),
+    VARCHAR(65535, 0, true, false, false, String.class),
+    LONGVARCHAR(0, 0, false, false, false, String.class),
+    DATE(6, 0, true, false, false, Date.class),
+    TIME(6, 0, true, false, false, Timestamp.class),
+    TIMESTAMP(6, 0, true, false, false, Timestamp.class),
+    BINARY(255, 0, true, false, false, byte[].class),
+    VARBINARY(255, 0, true, false, false, byte[].class),
+    LONGBINARY(255, 0, true, false, false, byte[].class),
+    NULL(0, 0, false, false, false, Object.class),
+    OTHER(0, 0, false, false, false, Object.class),
+    JAVA_OBJECT(0, 0, false, false, false, Object.class),
+    DISTINCT(0, 0, false, false, false, Object.class),
+    STRUCT(0, 0, false, false, false, Struct.class),
+    ARRAY(0, 0, false, false, false, Array.class),
+    BLOB(0, 0, false, false, false, Blob.class),
+    CLOB(0, 0, false, false, false, Clob.class),
+    REF(0, 0, false, false, false, Ref.class),
+    DATALINK(0, 0, false, false, false, java.net.URL.class),
+    BOOLEAN(0, 0, false, false, false, Boolean.class),
+    ROWID(0, 0, false, false, false, Integer.class),
+    NCHAR(255, 0, true, false, false, String.class),
+    NVARCHAR(65535, 0, true, false, false, String.class),
+    LONGNVARCHAR(0, 0, false, false, false, String.class),
+    NCLOB(0, 0, false, false, false, NClob.class),
+    SQLXML(0, 0, false, false, false, java.sql.SQLXML.class);
     
-    private final int minPrecision;
-    private final int maxPrecision;
-    private final int minScale;
-    private final int maxScale;
-    private final int defPrecision;
-    private final int defScale;
+    private final int maxSize;
+    private final int maxDecimal;
+    private final boolean canHaveSize;
+    private final boolean canHaveDecimal;
     private final boolean isSignable;
     private final Class[] returnTypes;
     
-    private Type(int minPrecision, int maxPrecision, int minScale, int maxScale, int defPrecision, int defScale, boolean isSignable, Class... returnTypes) {
-        this.minPrecision = minPrecision;
-        this.maxPrecision = maxPrecision;
-        this.minScale = minScale;
-        this.maxScale = maxScale;
-        this.defPrecision = defPrecision;
-        this.defScale = defScale;
+    private Type(int maxSize, int maxDecimal, boolean canHaveSize, boolean canHaveDecimal, boolean isSignable, Class... returnTypes) {
+        this.maxSize = maxSize;
+        this.maxDecimal = maxDecimal;
+        this.canHaveSize = canHaveSize;
+        this.canHaveDecimal = canHaveDecimal;
         this.isSignable = isSignable;
         this.returnTypes = returnTypes;
     }
     
-    private Type(int minPrecision, int maxPrecision, int minScale, int maxScale, int defPrecision, int defScale, Class... returnTypes) {
-        this(minPrecision, maxPrecision, minScale, maxScale, defPrecision, defScale, false, returnTypes);
-    }
-    
     public String getName() { return toString(); }
     
-    public int getMinPrecision() { return minPrecision; }
+    public int getMaxSize() { return this.maxSize; }
     
-    public int getMaxPrecision() { return maxPrecision; }
+    public int getMaxDecinal() { return this.maxDecimal; }
     
-    public int getMinScale() { return minScale; }
+    public Class[] getReturnTypes() { return returnTypes; }
     
-    public int getMaxScale() { return maxScale; }
-    
-    public int getDefaultPrecision() { return defPrecision; }
-    
-    public int getDefaultScale() { return defScale; }
-    
-    public void verifyIntegrity(int precision, int scale, boolean isPrimary, boolean isAutoincrement, boolean isNullable, boolean isUnsigned) throws InvalidSQLConfigException {
-        if(precision > this.maxPrecision || precision < this.minPrecision) {
-            throw new InvalidSQLConfigException("Precision is not within accepted values for type " + this.getName() + " of " + this.getMinPrecision() + "-" + this.getMaxPrecision() + ".");
-        } else if(scale > this.maxScale || scale < this.minScale) {
-            throw new InvalidSQLConfigException("Scale is not within accepted values for type " + this.getName() + " of " + this.getMinScale() + "-" + this.getMaxScale() + ".");
+    public void verifyIntegrity(int size, int decimal, boolean isPrimary, boolean isAutoincrement, boolean isNullable, boolean isUnsigned) throws InvalidSQLConfigException {
+        if(canHaveSize && (size < 0 || size > this.maxSize)) {
+            throw new InvalidSQLConfigException("Size parameter for type " + this.getName() + " must be between 0 and " + this.maxSize + ".");
+        } else if (!canHaveSize && size != -1) {
+            throw new InvalidSQLConfigException("Type " + this.getName() + " cannot have a custom size paramter.");
+        } else if(canHaveDecimal && (decimal < 0 || decimal > this.maxDecimal))  {
+            throw new InvalidSQLConfigException("Decimal paramter for type " + this.getName() + " must be between 0 and " + this.maxDecimal + ".");
+        } else if(!canHaveDecimal && size != -1) {
+            throw new InvalidSQLConfigException("Type " + this.getName() + " cannot have a custom decimal paramter.");
         } else if(isUnsigned && !this.isSignable) {
             throw new InvalidSQLConfigException("Field cannot be UNSIGNED with type " + this.getName());
         } else if(isPrimary && isNullable) {
