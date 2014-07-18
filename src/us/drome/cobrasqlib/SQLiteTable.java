@@ -4,8 +4,8 @@ import java.sql.SQLException;
 import java.util.Set;
 
 public class SQLiteTable extends Table {
-    public SQLiteTable(String name, ColumnDef... columns) {
-        super(name, columns);
+    public SQLiteTable(SQLiteEngine parent, String name, ColumnDef... columns) {
+        super(parent, name, columns);
     }
 
     @Override

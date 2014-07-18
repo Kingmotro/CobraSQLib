@@ -105,7 +105,8 @@ public class SQLiteEngine extends SQLEngine {
      */
     @Override
     public SQLiteTable getTable(String name) {
-        return new SQLiteTable(name);
+        //if Table object doesnt already exist, create a new one via queries, add it to the list of Tables, and then return it.
+        return new SQLiteTable(this, name);
     }
 
     @Override
@@ -118,7 +119,7 @@ public class SQLiteEngine extends SQLEngine {
         } catch (InvalidSQLConfigException ex) {
             Logger.getLogger(SQLiteEngine.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return new SQLiteTable("derp");
+        return new SQLiteTable(this, "derp");
     }
 
     @Override

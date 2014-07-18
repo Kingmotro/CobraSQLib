@@ -2,6 +2,7 @@ package us.drome.cobrasqlib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
  * @author TheAcademician
  * @since 0.1
  */
-public abstract class SQLEngine {
+public abstract class newSQLEngine {
     protected final Logger logger;
     private Table[] tables;
     /**
@@ -31,7 +32,7 @@ public abstract class SQLEngine {
      */
     private final ExecutorService queryExecutor;
     
-    protected SQLEngine (Logger logger) throws InvalidSQLConfigException {
+    protected newSQLEngine (Logger logger) throws InvalidSQLConfigException {
         this.logger = logger;
         this.queryExecutor = Executors.newSingleThreadExecutor();
     }
@@ -85,11 +86,11 @@ public abstract class SQLEngine {
      * @param query A string of the full SQL query to execute against this database.
      * @return a <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt> representing the result set.
      */
-    public List<Map<String,Object>> runQuery(String query) {
+    public List<Row> runQuery(String query) {
         Connection conn = getConnection();
         ResultSet result;
         ResultSetMetaData resultMeta;
-        List<Map<String, Object>> resultList = new ArrayList<>();
+        List<Row> resultList = new ArrayList<>();
         PreparedStatement statement;
         
         try {
@@ -97,10 +98,11 @@ public abstract class SQLEngine {
             statement = conn.prepareStatement(query);
             result = statement.executeQuery();
             resultMeta = result.getMetaData();
+            Table table = this.getTable(resultMeta.getTableName(1));
             while(result.next()) {
-                Map<String, Object> row = new HashMap<>();
+                Row row = new Row(this.getTable(resultMeta.getTableName(1)));
                 for(int i = 1 ; i <= resultMeta.getColumnCount() ; i++) {
-                    row.put(resultMeta.getColumnName(i), result.getObject(i));
+                    row.addColumn(new Column(row, table.getColumn(resultMeta.getColumnName(i)), result.getObject(i)));
                 }
                 resultList.add(row);
             }
