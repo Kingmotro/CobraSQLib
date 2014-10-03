@@ -7,9 +7,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -24,7 +23,8 @@ import java.util.logging.Logger;
  */
 public abstract class SQLEngine {
     protected final Logger logger;
-    private Table[] tables;
+    protected List<Table> tables;
+    protected Connection connection;
     /**
      * ExecutorService is used to run queries asynchronously. It is instantiated
      * as a SingleThreadExecutor to queue all database operations so they are executed in order.
@@ -85,11 +85,11 @@ public abstract class SQLEngine {
      * @param query A string of the full SQL query to execute against this database.
      * @return a <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt> representing the result set.
      */
-    public List<Map<String,Object>> runQuery(String query) {
+    public List<Row> runQuery(String query) {
         Connection conn = getConnection();
         ResultSet result;
         ResultSetMetaData resultMeta;
-        List<Map<String, Object>> resultList = new ArrayList<>();
+        List<Row> resultList = new ArrayList<>();
         PreparedStatement statement;
         
         try {
@@ -97,27 +97,27 @@ public abstract class SQLEngine {
             statement = conn.prepareStatement(query);
             result = statement.executeQuery();
             resultMeta = result.getMetaData();
+            Table table = this.getTable(resultMeta.getTableName(1));
             while(result.next()) {
-                Map<String, Object> row = new HashMap<>();
+                Row row = new Row(this.getTable(resultMeta.getTableName(1)));
                 for(int i = 1 ; i <= resultMeta.getColumnCount() ; i++) {
-                    row.put(resultMeta.getColumnName(i), result.getObject(i));
+                    row.addColumn(new Column(row, table.getColumn(resultMeta.getColumnName(i)), result.getObject(i)));
                 }
                 resultList.add(row);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
             if(conn != null) {
                 try {
-                    logger.log(Level.SEVERE, "Attempting to roll back query.");
+                    logger.log(Level.SEVERE, e.getMessage() + " Attempting to roll back query.");
                     conn.rollback();
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.SEVERE, e.getMessage());
                 }
             }
         } finally {
-            try { conn.setAutoCommit(true); } catch (SQLException e) { logger.log(Level.WARNING, "Unable to set AutoCommit to true."); }
+            try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { logger.log(Level.SEVERE, e.getMessage()); }
         }
-        
         return resultList;
     }
     
@@ -135,26 +135,36 @@ public abstract class SQLEngine {
             statement = conn.prepareStatement(update);
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
              try {
-                logger.log(Level.SEVERE, "Attempting to roll back update.");
+                logger.log(Level.SEVERE, e.getMessage() + " Attempting to roll back update.");
                 conn.rollback();
             } catch (SQLException ex) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, e.getMessage());
             }
         } finally {
-            try { conn.setAutoCommit(true); } catch (SQLException e) { logger.log(Level.WARNING, "Unable to set AutoCommit to true."); }
+            try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { logger.log(Level.SEVERE, e.getMessage()); }
         }
+        
     }
-    
-    /**
-     * Retrieve or instantiate a <tt>Connection</tt> to this database.
-     * 
-     * @return a <tt>>Connection</tt> object allowing connectivity with this database.
-     */
+ 
     public abstract Connection getConnection();
     
-    public abstract void closeConnection();
+    /**
+     * Closes any open connections to the database.
+     */
+    public void closeConnection() {
+        if(connection != null) {
+            try {
+                connection.close();
+                connection = null;
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, e.getMessage());
+            }
+        } else {
+            logger.log(Level.WARNING, "There are no connections to close.");
+        }
+    }
     
     /**
      * Properly shuts down this database connection including the query executor that could potentially hang the process it is running on.
@@ -163,18 +173,47 @@ public abstract class SQLEngine {
         if(queryExecutor != null) {
             queryExecutor.shutdown();
         }
+        if(connection != null) {
+            closeConnection();
+        }
+        logger.log(Level.INFO, "Database engine has been successfully shut down.");
     }
     
-    public abstract Table createTable(TableBuilder builder);
-    
     /**
-     * Retrieves a <tt>Table</tt> instance for the specified table name from this database.
-     * @param name The name of the database table you wish to retrieve.
-     * @return a <tt>Table</tt> object for the specified table.
+     * Protected method to retrieve the asynchronous executor.
+     * @return The executor used to run asynchronous queries.
      */
+    protected ExecutorService getExecutor() { return this.queryExecutor; }
+    
+    public abstract Table createTable(String name, ColumnDef... columns);
+    
     public abstract Table getTable(String name);
     
-    public abstract void renameTable(String oldName, String newName);
+    /**
+     * Function to rename a table to the provided new name.
+     * @param oldName The old table name.
+     * @param newName The new table name.
+     */
+    public void renameTable(String oldName, String newName) {
+        runAsyncUpdate("ALTER TABLE " + oldName + "RENAME TO " + newName);
+        for(Table table : tables) {
+            if(table.getName().equalsIgnoreCase(oldName)) {
+                table.rename(newName);
+            }
+        }
+    }
     
-    public abstract void dropTable(String name);
+    /**
+     * Function to remove a table from the database.
+     * @param name The name of the table to remove.
+     */
+    public void dropTable(String name) { 
+        runAsyncUpdate("DROP TABLE " + name);
+        Iterator<Table>  tableIt = tables.iterator();
+        while(tableIt.hasNext()) {
+            if(tableIt.next().getName().equalsIgnoreCase(name)) {
+                tableIt.remove();
+            }
+        }
+    }
 }

@@ -12,6 +12,15 @@ import java.sql.Struct;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+/**
+ * The <tt>Type</tt> class is a wrapper for the java.sql.Types class. This wrapper is designed to hold default and maximum values
+ * for data type properties. As well as containing the possible Java classes that the data types can return. It also provides
+ * functions to fetch one of these types by providing the java.sql.Types int designation, as well as verify that a provided
+ * set of column properties is valid for the data type.
+ * 
+ * @author TheAcademician
+ * @since 0.1
+ */
 public enum Type {
     BIT(64, 0, true, false, false, Types.BIT, Boolean.class, byte[].class),
     TINYINT(255, 0, true, false, true, Types.TINYINT,Integer.class, Boolean.class),
@@ -68,14 +77,41 @@ public enum Type {
         this.typeID = typeID;
     }
     
+    /**
+     * Returns the name of this data type as a <tt>String</tt>.
+     * @return
+     */
     public String getName() { return toString(); }
     
+    /**
+     * Provides the maximum size this data type allows.
+     * @return
+     */
     public int getMaxSize() { return this.maxSize; }
     
+    /**
+     * Provides the maximum amount of decimal places this data type allows.
+     * @return
+     */
     public int getMaxDecinal() { return this.maxDecimal; }
     
+    /**
+     * Fetches an array of Java classes that this data type can return.
+     * @return
+     */
     public Class[] getReturnTypes() { return returnTypes; }
     
+    /**
+     * Function to test the validity of the combination of settings being used to create a column definition of this type.
+     * 
+     * @param size The size of the column
+     * @param decimal The amount of decimal values
+     * @param isPrimary Is this a primary key
+     * @param isAutoincrement Will the column increment automatically
+     * @param isNullable Can the column accept null values
+     * @param isUnsigned Does this column accept only positive values
+     * @throws InvalidSQLConfigException Throws this exception if the column type cannot possess the attribute specified.
+     */
     public void verifyIntegrity(int size, int decimal, boolean isPrimary, boolean isAutoincrement, boolean isNullable, boolean isUnsigned) throws InvalidSQLConfigException {
         if(canHaveSize && (size < 0 || size > this.maxSize)) {
             throw new InvalidSQLConfigException("Size parameter for type " + this.getName() + " must be between 0 and " + this.maxSize + ".");
@@ -98,6 +134,11 @@ public enum Type {
         }
     }
     
+    /**
+     * Returns a <tt>Type</tt> object representing the equivalent value from java.sql.Types that the integer value matches.
+     * @param typeID The value from java.sql.Types
+     * @return The matching <tt>Type</tt> object
+     */
     public static Type parseType(int typeID) {
         for(Type type : Type.values()) {
             if(type.typeID == typeID) {

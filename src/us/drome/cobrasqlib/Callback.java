@@ -3,7 +3,6 @@ package us.drome.cobrasqlib;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wrapper to allow easier invocation of a callback method by needing to pass fewer parameters.
@@ -20,7 +19,7 @@ public class Callback {
      * 
      * @param instance Class instance where the <tt>method</tt> is located.
      * @param method The name of the method to execute. This method <b>MUST</b> accept a
-     * single parameter of <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt>.
+     * single parameter of <tt>List&lt;Row&gt;</tt>.
      * @throws NoSuchMethodException
      */
     public Callback(Object instance, String method) throws NoSuchMethodException {
@@ -31,12 +30,12 @@ public class Callback {
     /**
      * Executes the method referenced in this <tt>Callback</tt> object.
      * 
-     * @param param The <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt> to pass to the invoked method.
+     * @param param The parameter to pass to the invoked method.
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      * @throws InvocationTargetException
      */
-    public void invoke(List<Map<String, Object>> param) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void invoke(Object param) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         this.toInvoke.invoke(instance, param);
     }
 }
