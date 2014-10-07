@@ -22,14 +22,16 @@ public class MySQLEngine extends SQLEngine {
     /**
      * Construct a new <tt>MySQLEngine</tt> by specifying a Logger for output and the necessary connection data.
      * @param logger The output provider for this engine.
-     * @param url The hostname:port for the database.
+     * @param hostname The server hosting the database.
+     * @param port The port the server is using.
+     * @param database The name of the database instance.
      * @param username The username with access to this database.
      * @param password The password for the provided username.
      * @throws InvalidSQLConfigException
      */
-    public MySQLEngine(Logger logger, String url, String username, String password) throws InvalidSQLConfigException {
+    public MySQLEngine(Logger logger, String hostname, int port, String database, String username, String password) throws InvalidSQLConfigException {
         super(logger);
-        this.url = url;
+        this.url = hostname + ":" + String.valueOf(port) + "/" + database;
         this.username = username;
         this.password = password;
     }
